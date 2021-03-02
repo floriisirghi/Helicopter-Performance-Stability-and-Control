@@ -1,1 +1,1 @@
-# Helicopter-Performance-Stability-and-Control
+# Helicopter Performance, Stability and Control
