@@ -20,5 +20,8 @@ P_cont = 597         #[kW] continuous power
 Disc_L = W/(m.pi * (R_main**2)) #[N/m^2] disc loading
 v_i_hov = 12.3983    #[m/s] rotor induced velocity in hover
 sum_CD_S = 1         #[m^2] "flat plate area"
-tip_speed_main = 218 #[m/s] this value is taken from the brightspace database, so for the older version of the helicopter
-tip_speed_tail = 227 #[m/s] this value is taken from the brightspace database, so for the older version of the helicopter
+omegaR_main = 218 #[m/s] tip speed main, this value is taken from the brightspace database, so for the older version of the helicopter
+omegaR_tail = 227 #[m/s] tip speed tail, this value is taken from the brightspace database, so for the older version of the helicopter
+sigma = 0.082 # rotor solidity, taken from brightspace database
+C_D_p = 1 #this value still needs to be changed
+
