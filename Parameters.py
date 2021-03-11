@@ -39,4 +39,4 @@ k = 1.15             # induced drag power factor; this parameter has a value bet
                      # so we can assume it to be 1.15
 k_tail = 1.4         # induced drag power factor for the tail; this parameter has a value between 1.3 and 1.5
                      # as stated in the assignment description, so we can assume it to be 1.4
-l_tr = 6.98          # [m] tail rotor length. Measured on the sketch
+l_tr = 6.98          #  [m] tail rotor length. Measured on the sketch
