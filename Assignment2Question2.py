@@ -27,7 +27,10 @@ def rotor_power_forward_flight(V):
 
 print(rotor_power_forward_flight(150))
 
-V = np.linspace(0,120,101)
-Power = rotor_power_forward_flight(V)
+V = np.linspace(0,90,101)
+Power = 1.1*rotor_power_forward_flight(V)/1000
 plt.plot(V,Power)
+plt.plot(V,1270*np.ones(len(V)),label='Max TO')
+plt.plot(V,1194*np.ones(len(V)),label='Max CO')
+plt.legend()
 plt.show()
