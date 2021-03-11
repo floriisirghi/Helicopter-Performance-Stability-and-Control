@@ -29,4 +29,5 @@ M = 0.7              #[/] Figure of merit.                  Assumption
 CDp = 0.04           #[/] Average drag coefficient.         Assumption
 Omega = tip_speed_main/(R_main)     #[/s] Rotational rate.      Could be angular, then correct with 2pi, have to investigate
 sigma = N_Blades*c/(np.pi*R_main)   # Rotor solidity.       Uses assumptions as input
+k = 1.15             # induced drag power factor; this parameter has a value between 1.1 and 1.2 as stated in the reader, so we can assume it to be 1.15
 
