@@ -1,5 +1,6 @@
 from Parameters import *
 import math as m
+import matplotlib.pyplot as plt
 
 def rotor_power_forward_flight(V):
 # Calculate the helicopter rotor power in forward flight. For this determine the parasite drag power,
@@ -16,8 +17,8 @@ def rotor_power_forward_flight(V):
 
     #--------------- Induced power ---------------------------
     V_bar = V/v_i_hov
-    v_i_bar = m.sqrt(-((V_bar**2)/2)+m.sqrt((V_bar**4)/4 + 1))
-    P_i = k*W*v_i_bar*m.sqrt(W/(2*rho_SL*m.pi*R_main**2)) #this is from equation 35a. Should we just use k*T*v_i as in the slides?
+    v_i_bar = np.sqrt(-((V_bar**2)/2)+np.sqrt((V_bar**4)/4 + 1))
+    P_i = k*W*v_i_bar*np.sqrt(W/(2*rho_SL*m.pi*R_main**2)) #this is from equation 35a. Should we just use k*T*v_i as in the slides?
 
     #----------- Total rotor power in forward flight ---------
     P_tot = P_par + P_p_and_P_d + P_i
@@ -25,3 +26,8 @@ def rotor_power_forward_flight(V):
     return P_tot
 
 print(rotor_power_forward_flight(150))
+
+V = np.linspace(0,120,101)
+Power = rotor_power_forward_flight(V)
+plt.plot(V,Power)
+plt.show()
