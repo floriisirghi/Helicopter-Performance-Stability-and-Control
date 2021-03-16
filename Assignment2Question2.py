@@ -18,7 +18,7 @@ def rotor_power_forward_flight(V):
     #---------------- Profile drag power --------------------
     mu = V/tip_speed_main #tip speed ratio
 
-    P_p_and_P_d = (sigma*CDp)/8*rho_SL*(tip_speed_main**3)*m.pi*(R_main**2)*(1+4.65*(mu**2)) 
+    P_p_and_P_d = (sigma*CDp)/8*rho_SL*(tip_speed_main)**3*m.pi*(R_main**2)*(1+4.65*(mu**2)) 
 
     #--------------- Induced power ---------------------------
     V_bar = V/v_i_hov
@@ -59,10 +59,10 @@ def rotor_power_forward_flight(V):
 
 
 V = np.linspace(0,100,101)
-Power = 1.1*rotor_power_forward_flight(V)/1000
+Power = rotor_power_forward_flight(V)/1000
 plt.plot(V,Power)
-plt.plot(V,1270*np.ones(len(V)),label='Max TO')
-plt.plot(V,1194*np.ones(len(V)),label='Max CO')
+plt.plot(V,0.98*1270*np.ones(len(V)),label='Max TO')
+plt.plot(V,0.98*1194*np.ones(len(V)),label='Max CO')
 plt.legend()
 plt.title(" Power velocity curve with Max Take-Off and Max Continuous power.")
 plt.show()
