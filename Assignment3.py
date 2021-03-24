@@ -62,6 +62,29 @@ def tailpower(V):
 
     return P_tot_tail/1000
 
+def tailpower2(V):
+    # ----------------- TAIL ROTOR-----------------------------
+
+    # ---------------- Profile drag power --------------------
+    mu_tail = V / tip_speed_tail  # tip speed ratio
+
+    P_p_and_P_d_tail = (sigma_tail * CDp) / 8 * rho_SL * (tip_speed_tail ** 3) * m.pi * (R_tail ** 2) * (1 + 4.65 * (mu_tail ** 2))
+
+    # --------------- Induced power ---------------------------
+    V_bar = V / v_i_hov
+
+    #v_i_bar = 1/V_bar #works only for high speeds
+    v_i_bar = np.sqrt(-((V_bar ** 2) / 2) + np.sqrt((V_bar ** 4) / 4 + 1))
+
+    T_tail = (P_hov_BEM)/((tip_speed_tail/R_tail)*l_tr)
+
+    P_i_tail = 1.1*k_tail*T_tail*v_i_bar*v_i_hov  # from equation 35a
+
+    # ----------- Total main rotor power in forward flight ---------
+    P_tot_tail = P_p_and_P_d_tail + P_i_tail
+
+    return P_tot_tail/1000
+
 def dPdVtail(V):
     dPppd_taildV = (sigma_tail*CDp/8)*rho_SL*(tip_speed_tail)**3*np.pi*R_tail**2*4.65*2*V/tip_speed_tail**2
     c = 1.1*k_tail*v_i_hov*(1000*rotor_power_forward_flight(V)[0])/(l_tr*(tip_speed_tail/R_tail))
@@ -71,6 +94,14 @@ def dPdVtail(V):
     dPtaildV = dPppd_taildV + dPitaildV
     return dPtaildV/1000
 
+def dPdVtail2(V):
+    dPppd_taildV = (sigma_tail*CDp/8)*rho_SL*(tip_speed_tail)**3*np.pi*R_tail**2*4.65*2*V/tip_speed_tail**2
+    c = 1.1*k_tail*v_i_hov*(P_hov_BEM)/(l_tr*(tip_speed_tail/R_tail))
+    a = 1/(4*v_i_hov**4)
+    b = 1/(2*v_i_hov**2)
+    dPitaildV = c*(((2*a*V**3)/(np.sqrt(a*V**4 + 1))) - 2*b*V)/(2*np.sqrt(np.sqrt(a*V**4 + 1) - b*V**2))
+    dPtaildV = dPppd_taildV + dPitaildV
+    return dPtaildV/1000
 
 def dPdVtest(P,V):
     dPdV = np.ones(len(V)-1)
