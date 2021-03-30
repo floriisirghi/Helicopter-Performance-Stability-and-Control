@@ -66,14 +66,17 @@ def rotor_power_forward_flight(V):
 
     return P_tot
 
+eta_m = 0.95        #Mechanical efficiency
+P_max_TO = 1270*eta_m
+P_max_CO = 1194*eta_m
 
 V = np.linspace(0,100,101)
-Power = 1.1*rotor_power_forward_flight(V)/1000
+Power = rotor_power_forward_flight(V)/1000
 plt.plot(V,Power)
 plt.xlabel("Velocity [m/s]")
 plt.ylabel("Power [kW]")
-plt.plot(V,1270*np.ones(len(V)),label='Max TO')
-plt.plot(V,1194*np.ones(len(V)),label='Max CO')
+plt.plot(V,P_max_TO*np.ones(len(V)),label='Max TO')
+plt.plot(V,P_max_CO*np.ones(len(V)),label='Max CO')
 plt.legend()
 plt.title(" Power velocity curve with Max Take-Off and Max Continuous power.")
 plt.show()
