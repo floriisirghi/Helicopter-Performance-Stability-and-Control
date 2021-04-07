@@ -66,6 +66,9 @@ def rotor_power_forward_flight(V):
 
     return P_tot, P_tot_tail, P_par, P_p_and_P_d, P_i, v_i_bar
 
+eta_m = 0.95        #Mechanical efficiency
+P_max_TO = 1270*eta_m
+P_max_CO = 1194*eta_m
 
 V = np.linspace(0,100,101)
 P_tot, P_tot_tail, P_par, P_p_and_P_d, P_i, v_i_bar = rotor_power_forward_flight(V)
@@ -109,7 +112,7 @@ plt.show()
 V = np.linspace(0,100,101)
 Power = rotor_power_forward_flight(V)/1000
 plt.plot(V,Power)
-plt.plot(V,0.98*1270*np.ones(len(V)),label='Max TO') 
+plt.plot(V,0.98*1270*np.ones(len(V)),label='Max TO')
 
 #why do we have this 0.98 here?
 
