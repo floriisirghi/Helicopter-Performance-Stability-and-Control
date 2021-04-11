@@ -43,7 +43,8 @@ u = 46.3/2
 w = 0
 q = 0
 theta_f = 0
-
+x = 0
+y = 0
 """
 Initialize result arrays
 """
@@ -54,6 +55,8 @@ qlst = []
 theta_flst = []
 tlst = []
 wdot = 0
+xlst = []
+ylst = []
 #thetaclst = []
 while t < Tstop:
 
@@ -94,11 +97,15 @@ while t < Tstop:
     wdot = g*np.cos(theta_f) - (D*w)/(m*V) - (T*np.cos(theta_c-a1))/(m) + q*u
     qdot = (-T*h*np.sin(theta_c-a1))/(Iy)
     theta_fdot = q
+    xdot = u*np.cos(theta_f) + w*np.sin(theta_f)
+    ydot = u*np.sin(theta_f) - w*np.cos(theta_f)
 
     u += udot*dt
     w += wdot*dt
     q += qdot*dt
     theta_f += theta_fdot*dt
+    x += xdot*dt
+    y += ydot*dt
     t += dt
 
     ulst += [u]
@@ -106,6 +113,9 @@ while t < Tstop:
     qlst += [q]
     theta_flst += [theta_f]
     tlst += [t]
+    xlst += [-x]
+    ylst += [y]
+
     #thetaclst += [theta_c]
 
 #plt.plot(tlst,thetaclst)
@@ -113,23 +123,36 @@ while t < Tstop:
 #plt.xlabel('t(s)')
 #plt.legend
 #plt.show()
+plt.figure(1)
 plt.plot(tlst,ulst)
 plt.ylabel('u(m/s)',rotation=0)
 plt.xlabel('t(s)')
 plt.legend
+plt.figure(2)
+plt.plot(tlst,xlst)
+plt.ylabel('x(m)',rotation=0)
+plt.xlabel('t(s)')
+plt.legend
 plt.show()
+plt.figure(3)
 plt.plot(tlst,wlst)
 plt.ylabel('w(m/s)',rotation=0)
 plt.xlabel('t(s)')
 plt.legend
-plt.show()
-plt.plot(tlst,qlst)
-plt.ylabel('q(?)',rotation=0)
+plt.figure(4)
+plt.plot(tlst,ylst)
+plt.ylabel('y(m)',rotation=0)
 plt.xlabel('t(s)')
 plt.legend
 plt.show()
+plt.figure(5)
+plt.plot(tlst,qlst)
+plt.ylabel('q(rad/s)',rotation=0)
+plt.xlabel('t(s)')
+plt.legend
+plt.figure(6)
 plt.plot(tlst,theta_flst)
-plt.ylabel(r'$\theta_f$(deg/rad?)',rotation=0)
+plt.ylabel(r'$\theta_f$(rad)',rotation=0)
 plt.xlabel('t(s)')
 plt.legend
 plt.show()
