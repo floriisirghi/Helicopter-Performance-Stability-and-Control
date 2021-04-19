@@ -38,11 +38,11 @@ Control inputs
 theta_0 = 6*np.pi/180
 theta_c = 0
 
-theta_0gen = 5*np.pi/180
+theta_0gen = 6*np.pi/180
 """
 State variables
 """
-u = 46.3
+u = 46.3/2
 w = 0
 q = 0
 theta_f = 0
@@ -71,17 +71,35 @@ ydotlst = []
 Gains
 """
 
-K1 = 0.006
-K2 = 0.0001
-K3 = 0.001
+G1 = 0.1
+G2 = 0.01
 
-t_control = 15   #Time after which the pilot becomes active
+K1 = 0.006
+K2 = -0.0001
+K3 = 0.000010
+
+"""
+Observations
+No theta_c
+K1 = 0.005/6 -> oscilattions
+
+Wait what is c? it is not w?
+is it ydot? 
+Investigate and correct
+"""
+
+t_control = 150   #Time after which the pilot becomes active
 
 while t < Tstop:
-    
+    ydotdes = K3*(ydes-y)
     if t > t_control:
-        theta_c = 0.2*theta_f + 0.2*q
+        delta_theta = np.trapz(np.ones(len(ydotlst))*ydotdes-ydotlst,tlst)
+        print(delta_theta)
 
+        #theta_c = G1*theta_f + G2*q         #Proportional, differential controller
+        theta_c = theta_0gen + K1*(ydotdes-ydot) + K2*delta_theta  #Proportional, Integral
+        
+        print(theta_0)
     V = np.sqrt(u**2 + w**2)
 
     if u == 0:
