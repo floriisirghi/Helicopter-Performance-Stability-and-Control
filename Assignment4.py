@@ -1,5 +1,7 @@
 import numpy as np
 from scipy.optimize import fsolve
+import scipy.integrate as integrate
+
 import matplotlib.pyplot as plt
 plt.rcParams.update({'font.size': 22})
 
@@ -36,10 +38,11 @@ Control inputs
 theta_0 = 6*np.pi/180
 theta_c = 0
 
+theta_0gen = 5*np.pi/180
 """
 State variables
 """
-u = 46.3/2
+u = 46.3
 w = 0
 q = 0
 theta_f = 0
@@ -57,11 +60,27 @@ tlst = []
 wdot = 0
 xlst = []
 ylst = []
+wdes = 0
+ydes = 0
+ydotdes = 0
+ydot = 0
+ydotlst = []
 #thetaclst = []
-while t < Tstop:
 
-    #theta_c = -1.2*theta_f
-    #theta_0 = -0.2*wdot - 0.2*w
+"""
+Gains
+"""
+
+K1 = 0.006
+K2 = 0.0001
+K3 = 0.001
+
+t_control = 15   #Time after which the pilot becomes active
+
+while t < Tstop:
+    
+    if t > t_control:
+        theta_c = 0.2*theta_f + 0.2*q
 
     V = np.sqrt(u**2 + w**2)
 
@@ -86,7 +105,7 @@ while t < Tstop:
         return CTbem(lambda_i) - CTGlau(lambda_i)
 
     lambda_i = fsolve(F,[0])[0]
-    print(lambda_i)
+
     a1 = ((8*mu*theta_0)/(3) - 2*mu*(lambda_c + lambda_i) - (16*q)/(gamma*Omega))/(1 - 0.5*mu**2)
     CT = CTGlau(lambda_i)
 
@@ -115,7 +134,7 @@ while t < Tstop:
     tlst += [t]
     xlst += [-x]
     ylst += [y]
-
+    ydotlst += [ydot]
     #thetaclst += [theta_c]
 
 #plt.plot(tlst,thetaclst)
