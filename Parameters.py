@@ -28,6 +28,7 @@ N_Blades = 4         #[/] Number of blades main rotor.
 N_blades_tail = 10   #[/] Number of blades fenestron.
 #c = 0.3
 c = 0.385            #[m] Average chord main rotor.                    Assumption -> brightspace database
+cl_alpha = 5.7 #assumed value
 c_tail = 0.094       #[m] Average chord fenestron.
 M = 0.7              #[/] Figure of merit.                  Assumption
 Omega = tip_speed_main/(R_main)     #[/s] Rotational rate.      Could be angular, then correct with 2pi, have to investigate
