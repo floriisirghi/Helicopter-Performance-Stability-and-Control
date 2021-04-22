@@ -60,8 +60,11 @@ xdot = [0] + (steps-1)*[0]
 zdot = [0] + (steps-1)*[0]
 
 c = steps*[0]
+c_des=0
+h_des = 100
 altitude_h = steps*[0]
-
+K1=0.05
+K3= 0.2
 #----------------- Integration scheme -------------------
 
 for i in range(steps):
@@ -77,9 +80,14 @@ for i in range(steps):
     #No law for collective
 
     c[i] = u[i]*np.sin(pitch[i]) - w[i]*np.cos(pitch[i])
-    altitude_h[i] = -z[i]
-    collect[i]=collect[0]
 
+    collect[i] = 5/180*np.pi + K1*(c_des - c[i])
+
+
+    altitude_h[i] = -z[i]
+    #collect[i]=collect[0]
+
+    c_des = K3 * (h_des - altitude_h[i])
     # ---- Defining the differential equations ------
 
     # ---- Defining the nondimesnional notations -----
@@ -154,7 +162,6 @@ plt.plot(t,x)
 plt.ylabel('x(m)',rotation=0)
 plt.xlabel('t(s)')
 plt.legend
-plt.show()
 plt.figure(3)
 plt.plot(t,w)
 plt.ylabel('w(m/s)',rotation=0)
@@ -165,7 +172,6 @@ plt.plot(t,altitude_h)
 plt.ylabel('h(m)',rotation=0) #-z
 plt.xlabel('t(s)')
 plt.legend
-plt.show()
 plt.figure(5)
 plt.plot(t,q)
 plt.ylabel('q(rad/s)',rotation=0)
@@ -176,7 +182,6 @@ plt.plot(t, pitch)
 plt.ylabel('pitch (rad)',rotation=0)
 plt.xlabel('t(s)')
 plt.legend
-plt.show()
 
 plt.figure(7)
 longit_2_plot = [0]*len(longit)
