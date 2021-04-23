@@ -2,6 +2,7 @@ from Parameters import *
 from MoI import Iyy_total
 import numpy as np
 import matplotlib.pyplot as plt
+from trim import trimconditions
 
 tau = 0.1
 #lock = (rho_SL*cl_alpha*c*R_main**4)/Iyy_total #this gives a very small lock number
@@ -18,7 +19,7 @@ step=(time-t0)/steps
 collect=[6*np.pi/180] + (steps-1)*[0]
 longit=[0*np.pi/180] + (steps-1)*[0]
 
-u0=0
+u0=90*0.514
 w0=0
 q0=0
 pitch0=0*np.pi/180
