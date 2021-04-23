@@ -94,3 +94,4 @@ def trimconditions(V):
 def knotstomps(knots):
     mps = 0.514*knots
     return mps
+

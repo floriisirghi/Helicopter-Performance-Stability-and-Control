@@ -2,7 +2,7 @@ from Parameters import *
 from MoI import Iyy_total
 import numpy as np
 import matplotlib.pyplot as plt
-from trim import trimconditions
+from trim import knotstomps, trimconditions
 
 tau = 0.1
 #lock = (rho_SL*cl_alpha*c*R_main**4)/Iyy_total #this gives a very small lock number
@@ -16,10 +16,11 @@ steps=800
 time=80 #sec
 step=(time-t0)/steps
 
+
 collect=[6*np.pi/180] + (steps-1)*[0]
 longit=[0*np.pi/180] + (steps-1)*[0]
 
-u0=90*0.514
+u0=0
 w0=0
 q0=0
 pitch0=0*np.pi/180
@@ -64,8 +65,16 @@ c = steps*[0]
 c_des=0
 h_des = 100
 altitude_h = steps*[0]
-K1=0.05
+K1= 0.05
 K3= 0.2
+
+V_man1 = knotstomps(90)
+V_man2 = knotstomps(70)
+V_man3 = knotstomps(90)
+V_man4 = knotstomps(110)
+V_margin = knotstomps(5)
+minmantime = 5
+
 #----------------- Integration scheme -------------------
 
 for i in range(steps):
@@ -77,6 +86,48 @@ for i in range(steps):
     if t[i]>=15:
         longitgrad[i]=0.2*pitch[i]*180/np.pi + 0.2*q[i]*180/np.pi #PD controller
         longit[i] = longitgrad[i]*np.pi/180
+
+    #Check if manouevre 1 is completed, if this is true, set new theta_c_gen, theta_0_gen and V_des
+    if t[i] >= minmantime:
+        countlst = np.zeros((int(minmantime/step)))
+        for j in range(int(minmantime/step)):
+            if V_man1 - V_margin  <= u[i-j] <= V_man1 + V_margin:
+                countlst[j] = 1
+            if np.sum(countlst) == len(countlst):
+                man1 = True
+                theta_c_gen, theta_0_gen = trimconditions(knotstomps(70))
+                V_des = knotstomps(70)
+    
+    #When manouevre 1 is completed, check if manouevre 2 is completed, if this is true, set new theta_c_gen, theta_0_gen and V_des
+    if man1 == True:
+        countlst = np.zeros((int(minmantime/step)))
+        for j in range(int(minmantime/step)):
+            if V_man1 - V_margin  <= u[i-j] <= V_man1 + V_margin:
+                countlst[j] = 1
+            if np.sum(countlst) == len(countlst):
+                man2 = True
+                theta_c_gen, theta_0_gen = trimconditions(knotstomps(90))
+                V_des = knotstomps(90)
+    
+    #When manouevre 1 is completed, check if manouevre 2 is completed, if this is true, set new theta_c_gen, theta_0_gen and V_des
+    if man2 == True:
+        countlst = np.zeros((int(minmantime/step)))
+        for j in range(int(minmantime/step)):
+            if V_man1 - V_margin  <= u[i-j] <= V_man1 + V_margin:
+                countlst[j] = 1
+            if np.sum(countlst) == len(countlst):
+                man3 = True
+                theta_c_gen, theta_0_gen = trimconditions(knotstomps(110))
+                V_des = knotstomps(110)
+    
+    #When manouevre 1 is completed, check if manouevre 2 is completed, if this is true, the simulation can end.
+    if man3 == True:
+        countlst = np.zeros((int(minmantime/step)))
+        for j in range(int(minmantime/step)):
+            if V_man1 - V_margin  <= u[i-j] <= V_man1 + V_margin:
+                countlst[j] = 1
+            if np.sum(countlst) == len(countlst):
+                man4 = True
 
     #No law for collective
 
@@ -128,9 +179,9 @@ for i in range(steps):
     helling[i] = longit[i] - a1[i]
     vv[i] = v_dimless[i]*tip_speed_main
 
-    udot[i]= -g*np.sin(pitch[i]) - sum_CD_S/mass*0.5*rho_SL*u[i]*vv[i]+thrust[i]/mass*np.sin(helling[i]) - q[i]*w[i]
+    udot[i]= -g*np.sin(pitch[i]) - sum_CD_S/mass*0.5*rho_SL*u[i]*vv[i] + thrust[i]/mass*np.sin(helling[i]) - q[i]*w[i]
 
-    wdot[i]= g*np.cos(pitch[i]) -sum_CD_S/mass*0.5*rho_SL*w[i]*vv[i] - thrust[i]/mass*np.cos(helling[i] + q[i]*u[i])
+    wdot[i]= g*np.cos(pitch[i]) - sum_CD_S/mass*0.5*rho_SL*w[i]*vv[i] - thrust[i]/mass*np.cos(helling[i] + q[i]*u[i])
 
     qdot[i]= -thrust[i]*h/Iyy_total*np.sin(helling[i])
 
