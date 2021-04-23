@@ -56,6 +56,7 @@ def rotor_power_forward_flight(V):
     #v_i_bar = 1/V_bar #works only for high speeds
     v_i_bar_tail = np.sqrt(-((V_bar_tail ** 2) / 2) + np.sqrt((V_bar_tail ** 4) / 4 + 1))
 
+    v_i_tail = v_i_bar_tail*v_i_hov_tail
 
     P_i_tail = 1.1*k_tail*T_tail*v_i_bar_tail*v_i_hov_tail # from equation 35a
 
@@ -64,14 +65,14 @@ def rotor_power_forward_flight(V):
 
     P_tot = P_tot_main + P_tot_tail
 
-    return P_tot, P_tot_tail, P_par, P_p_and_P_d, P_i, v_i_bar
+    return P_tot_main, P_p_and_P_d_tail, mu_tail, P_i_tail, T_tail, v_i_tail, P_tot, P_tot_tail, P_par, P_p_and_P_d, P_i, v_i_bar
 
 eta_m = 0.95        #Mechanical efficiency
 P_max_TO = 1270*eta_m
 P_max_CO = 1194*eta_m
 
 V = np.linspace(0,100,101)
-P_tot, P_tot_tail, P_par, P_p_and_P_d, P_i, v_i_bar = rotor_power_forward_flight(V)
+P_tot_main, P_p_and_P_d_tail, mu_tail, P_i_tail, T_tail, v_i_tail, P_tot, P_tot_tail, P_par, P_p_and_P_d, P_i, v_i_bar = rotor_power_forward_flight(V)
 Power = P_tot/1000  #why do we have this 1.1 here?
 #plt.plot(V,P_tot_tail/1000, label="Tail rotor total power")
 plt.plot(V,Power, label="Total power")
@@ -91,6 +92,12 @@ plt.show()
 #print(P_par[60])
 #print(P_i[60])
 #print(P_p_and_P_d[60])
+
+print(P_p_and_P_d_tail[60])
+print(mu_tail[60])
+print(P_p_and_P_d_tail[60]+P_i_tail[60])
+print(P_tot_tail[60])
+print(P_tot_tail[60]*100/P_tot_main[60])
 
 """
 eta_m = 0.95        #Mechanical efficiency

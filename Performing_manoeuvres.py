@@ -18,7 +18,7 @@ step=(time-t0)/steps
 collect=[6*np.pi/180] + (steps-1)*[0]
 longit=[0*np.pi/180] + (steps-1)*[0]
 
-u0=0
+u0=90*0.514444
 w0=0
 q0=0
 pitch0=0*np.pi/180
@@ -60,32 +60,39 @@ xdot = [0] + (steps-1)*[0]
 zdot = [0] + (steps-1)*[0]
 
 c = steps*[0]
+V = steps*[0]
+V_des = 70*0.514444
 c_des=0
 h_des = 100
+pitch_des = 0
 altitude_h = steps*[0]
-K1=0.05
-K3= 0.2
+
+collect_des = 5*np.pi/180 #this will change for different trim conditions
+
+# PID gains
+K1_long = 0.02
+K2_long = 0.02
+
+K1_collect = 0.05
+K3_collect = 0.02
+dV=0
 #----------------- Integration scheme -------------------
 
 for i in range(steps):
-    if t[i]>=0.5 and t[i]<=1:
-        longit[i]=1*np.pi/180
-    else:
-        longit[i]=0*np.pi/180
 
-    if t[i]>=15:
-        longitgrad[i]=0.2*pitch[i]*180/np.pi + 0.2*q[i]*180/np.pi #PD controller
-        longit[i] = longitgrad[i]*np.pi/180
+    # Law for cyclic
+    V[i] = np.sqrt(u[i]**2 + w[i]**2)
+    Vdot = V_des - V[i]
+    dV = dV + Vdot*step
+    longit[i] = K1_long*(pitch[i] - pitch_des)*180/np.pi + K2_long*q[i]*180/np.pi
 
-    #No law for collective
 
+    # Law for collective
     c[i] = u[i]*np.sin(pitch[i]) - w[i]*np.cos(pitch[i])
 
-    collect[i] = 5/180*np.pi + K1*(c_des - c[i])
 
-
+    collect[i] = collect_des + K1*(c_des - c[i])
     altitude_h[i] = -z[i]
-    #collect[i]=collect[0]
 
     c_des = K3 * (h_des - altitude_h[i])
     # ---- Defining the differential equations ------
@@ -152,43 +159,46 @@ for i in range(steps):
         z[i + 1] = z[i] + step * zdot[i]
         t[i+1] = t[i] + step
 
-plt.figure(1)
-plt.plot(t,u)
-plt.ylabel('u(m/s)',rotation=0)
-plt.xlabel('t(s)')
-plt.legend
-plt.figure(2)
-plt.plot(t,x)
-plt.ylabel('x(m)',rotation=0)
-plt.xlabel('t(s)')
-plt.legend
-plt.figure(3)
-plt.plot(t,w)
-plt.ylabel('w(m/s)',rotation=0)
-plt.xlabel('t(s)')
-plt.legend
-plt.figure(4)
-plt.plot(t,altitude_h)
-plt.ylabel('h(m)',rotation=0) #-z
-plt.xlabel('t(s)')
-plt.legend
-plt.figure(5)
-plt.plot(t,q)
-plt.ylabel('q(rad/s)',rotation=0)
-plt.xlabel('t(s)')
-plt.legend
-plt.figure(6)
-plt.plot(t, pitch)
-plt.ylabel('pitch (rad)',rotation=0)
-plt.xlabel('t(s)')
-plt.legend
+plotting = False
 
-plt.figure(7)
-longit_2_plot = [0]*len(longit)
-for i in range(len(longit)):
-    longit_2_plot[i] = longit[i]*180/np.pi
-plt.plot(t, longit_2_plot)
-plt.ylabel('longitudinal control (cyclic)',rotation=0)
-plt.xlabel('t(s)')
-plt.legend
-plt.show()
+if plotting == True:
+    plt.figure(1)
+    plt.plot(t,u)
+    plt.ylabel('u(m/s)',rotation=0)
+    plt.xlabel('t(s)')
+    plt.legend
+    plt.figure(2)
+    plt.plot(t,x)
+    plt.ylabel('x(m)',rotation=0)
+    plt.xlabel('t(s)')
+    plt.legend
+    plt.figure(3)
+    plt.plot(t,w)
+    plt.ylabel('w(m/s)',rotation=0)
+    plt.xlabel('t(s)')
+    plt.legend
+    plt.figure(4)
+    plt.plot(t,altitude_h)
+    plt.ylabel('h(m)',rotation=0) #-z
+    plt.xlabel('t(s)')
+    plt.legend
+    plt.figure(5)
+    plt.plot(t,q)
+    plt.ylabel('q(rad/s)',rotation=0)
+    plt.xlabel('t(s)')
+    plt.legend
+    plt.figure(6)
+    plt.plot(t, pitch)
+    plt.ylabel('pitch (rad)',rotation=0)
+    plt.xlabel('t(s)')
+    plt.legend
+
+    plt.figure(7)
+    longit_2_plot = [0]*len(longit)
+    for i in range(len(longit)):
+        longit_2_plot[i] = longit[i]*180/np.pi
+    plt.plot(t, longit_2_plot)
+    plt.ylabel('longitudinal control (cyclic)',rotation=0)
+    plt.xlabel('t(s)')
+    plt.legend
+    plt.show()

@@ -144,5 +144,5 @@ Iyy_total = Iy_disk_main_complete + Iy_disk_tail_complete + Iy_fuselage_p_comple
 
 verify_total_mass = max_weight - (m_main + m_tail + m_fuselage_p + m_fuselage_c + m_fuel_tank + m_eng_nac + m_main_hard + m_hs + m_vf + m_lg)
 
-print(Iyy_total)
+#print(Iyy_total)
 #print(verify_total_mass)
