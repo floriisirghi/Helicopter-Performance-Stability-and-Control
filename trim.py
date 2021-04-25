@@ -95,3 +95,6 @@ def knotstomps(knots):
     mps = 0.514*knots
     return mps
 
+def mpstoknots(mps):
+    knots = 1.94*mps
+    return knots

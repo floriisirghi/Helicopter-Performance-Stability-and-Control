@@ -20,6 +20,7 @@ step=(time-t0)/steps
 
 V_man1 = knotstomps(90)
 theta_c_gen, theta_0_gen = trimconditions(V_man1)
+print(theta_c_gen, theta_0_gen)
 
 collect=[theta_0_gen] + (steps-1)*[0]
 longit=[theta_c_gen] + (steps-1)*[0]
@@ -76,10 +77,10 @@ dtf = steps*[0]
 altitude_h = steps*[0]
 
 #Gains needed for the cyclic controller
-K1 = 0.025 #0.028 #0.026
-K2 = 0.12 #0.12 #0.1
-K3 = 0.0025 #0.0015
-K4 = -0.0045 #-0.006
+K1 = 0.045 #0.028 #0.026
+K2 = 0.09 #0.12 #0.1
+K3 = 0.002 #0.0015
+K4 = -0.005 #-0.006
 K5 = 0.5 #0.5
 K6 = -0.0001  #0.00
 
@@ -105,7 +106,6 @@ K10 = 0.89
 
 
 V_man2 = knotstomps(70)
-print(knotstomps(70), knotstomps(90), knotstomps(110))
 V_des = V_man2
 V_man3 = knotstomps(90)
 V_man4 = knotstomps(110)
@@ -123,11 +123,11 @@ checks =  False
 
 for i in range(steps):
 
-    if t[i]<=80:
+    if t[i]<=70:
         V_des = V_man2
         theta_c_gen, theta_0_gen = trimconditions(V_man1)
 
-    if t[i]> 80 and t[i]<=180:
+    if t[i]> 70 and t[i]<=180:
         V_des = V_man3
         theta_c_gen, theta_0_gen = trimconditions(V_man2)
 
@@ -145,7 +145,8 @@ for i in range(steps):
     if (i + 1) < steps:
         dtf[i + 1] = dtf[i] + (pitch[i] - pitch_des) * step
 
-        longit[i] =  K1 * (pitch[i] - pitch_des) * 180 / np.pi + K2 * q[i] * 180 / np.pi + K3 * dtf[i]*180/np.pi
+    if i>=1:
+        longit[i] = theta_c_gen + K1 * (pitch[i] - pitch_des) * 180 / np.pi + K2 * q[i] * 180 / np.pi + K3 * dtf[i]*180/np.pi
 
     # Law for collective
     c[i] = u[i] * np.sin(pitch[i]) - w[i] * np.cos(pitch[i])
@@ -295,3 +296,4 @@ if plotting == True:
     plt.xlabel('t(s)')
     plt.legend
     plt.show()
+
