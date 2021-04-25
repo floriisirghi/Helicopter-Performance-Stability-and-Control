@@ -1,3 +1,6 @@
+# Developed by Martijn Kanger as part of the AE4314 Helicopter Performance, Stability and Control course
+# April 2021
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
