@@ -2,7 +2,7 @@ from Parameters import *
 from MoI import Iyy_total
 import numpy as np
 import matplotlib.pyplot as plt
-from trim import knotstomps, trimconditions, mpstoknots
+from trim import knotstomps, trimconditions
 
 
 tau = 0.1
@@ -20,6 +20,7 @@ step=(time-t0)/steps
 
 V_man1 = knotstomps(90)
 theta_c_gen, theta_0_gen = trimconditions(V_man1)
+print(theta_c_gen, theta_0_gen)
 
 collect=[theta_0_gen] + (steps-1)*[0]
 longit=[theta_c_gen] + (steps-1)*[0]
@@ -76,25 +77,39 @@ dtf = steps*[0]
 altitude_h = steps*[0]
 
 #Gains needed for the cyclic controller
-K1 = 0.026
-K2 = 0.1
-K3 = 0.0015
-K4 = -0.006
-K5 = 0.5
-K6 = 0.00
+K1 = 0.045 #0.028 #0.026
+K2 = 0.09 #0.12 #0.1
+K3 = 0.002 #0.0015
+K4 = -0.005 #-0.006
+K5 = 0.5 #0.5
+K6 = -0.0001  #0.00
 
 #Gains needed for the collective controller
-K7 = 0.08
-K8 = 0.05
-K9 = 0.0386
+K7 = 0.1
+K8 = 0.12
+K9 = 0.04
 K10 = 0.89
+
+#Gains needed for the cyclic controller
+#K1 = 0.03 #0.026
+#K2 = 0.098 #0.1
+#K3 = 0.004 #0.0015
+#K4 = 0.005 #-0.006
+#K5 = 0.05 #0.005
+#K6 = 0.0001 #04 #0.00004
+
+#Gains needed for the collective controller
+#K7 = 0.08
+#K8 = 0.05
+#K9 = 0.038
+#K10 = 0.89
 
 
 V_man2 = knotstomps(70)
 V_des = V_man2
 V_man3 = knotstomps(90)
 V_man4 = knotstomps(110)
-V_margin = knotstomps(10)
+V_margin = knotstomps(5)
 minmantime = 30
 
 man1= False
@@ -108,29 +123,30 @@ checks =  False
 
 for i in range(steps):
 
-    #if t[i]<=80:
-    #    V_des = V_man2
-    #    theta_c_gen, theta_0_gen = trimconditions(V_man1)
+    if t[i]<=70:
+        V_des = V_man2
+        theta_c_gen, theta_0_gen = trimconditions(V_man1)
 
-    #if t[i]> 80 and t[i]<=180:
-    #    V_des = V_man3
-    #    theta_c_gen, theta_0_gen = trimconditions(V_man2)
+    if t[i]> 70 and t[i]<=180:
+        V_des = V_man3
+        theta_c_gen, theta_0_gen = trimconditions(V_man2)
 
-    #if t[i]> 180 and t[i]<=time:
-    #    V_des = V_man4
-    #    theta_c_gen, theta_0_gen = trimconditions(V_man3)
+    if t[i]> 180 and t[i]<=time:
+        V_des = V_man4
+        theta_c_gen, theta_0_gen = trimconditions(V_man3)
 
     # Law for cyclic
     V[i] = np.sqrt(u[i] ** 2 + w[i] ** 2)
     if (i + 1) < steps:
-        dV[i + 1] = dV[i] + (V_des - V[i]) * step
+        dV[i + 1] = dV[i] + -(V[i] - V_des) * step
 
-        pitch_des = K4 * (V_des - V[i]) + K5 * udot[i] + K6 * dV[i + 1]
+        pitch_des = K4 * -(V[i] - V_des) + K5 * udot[i] + K6 * dV[i]
 
     if (i + 1) < steps:
         dtf[i + 1] = dtf[i] + (pitch[i] - pitch_des) * step
 
-        longit[i] =  K1 * (pitch[i] - pitch_des) * 180 / np.pi + K2 * q[i] * 180 / np.pi + K3 * dtf[i + 1]*180/np.pi
+    if i>=1:
+        longit[i] = theta_c_gen + K1 * (pitch[i] - pitch_des) * 180 / np.pi + K2 * q[i] * 180 / np.pi + K3 * dtf[i]*180/np.pi
 
     # Law for collective
     c[i] = u[i] * np.sin(pitch[i]) - w[i] * np.cos(pitch[i])
@@ -138,20 +154,17 @@ for i in range(steps):
     c_des = K9 * (h_des - altitude_h[i]) + K10 * c[i]
     if (i + 1) < steps:
         dc[i + 1] = dc[i] + (c_des - c[i]) * step
-        collect[i] = theta_0_gen + K7 * (c_des - c[i]) + K8 * dc[i + 1]
+        collect[i] = theta_0_gen + K7 * (c_des - c[i]) + K8 * dc[i]
 
-    checks = True
     if checks == True:
         #Check if manouevre 1, going from 90 kts to 70 kts, is completed, theta_c_gen, theta_0_gen and V_des
         if t[i] >= minmantime:
-            countlst = np.zeros((int(minmantime/step)))
-            for j in range(int(minmantime/step)):
-                if V_man2 - V_margin  <= u[i-j] <= V_man2 + V_margin:
-                    countlst[j] = 1
-                if np.sum(countlst) == len(countlst):
-                    man1 = True
-                    theta_c_gen, theta_0_gen = trimconditions(knotstomps(70))
-                    V_des = V_man3
+            if V_man2 - V_margin  <= u[i-j] <= V_man2 + V_margin:
+                countlst[j] = 1
+            if np.sum(countlst) == len(countlst):
+                man1 = True
+                theta_c_gen, theta_0_gen = trimconditions(knotstomps(70))
+                V_des = V_man3
 
         #When manouevre 1 is completed check if manoeuvre 2, going from 70 kts to 90 kts is completed, set new theta_c_gen, theta_0_gen and V_des
         if man1 == True:
@@ -245,7 +258,9 @@ plotting = True
 
 if plotting == True:
     plt.figure(1)
-    plt.plot(t,1.94*np.ones(len(u))*u)      # This is now in knots
+    for i in range(len(u)):
+        u[i] = u[i]*1.94384
+    plt.plot(t,u)
     plt.ylabel('u(kts)',rotation=0)
     plt.xlabel('t(s)')
     plt.legend
@@ -281,3 +296,4 @@ if plotting == True:
     plt.xlabel('t(s)')
     plt.legend
     plt.show()
+
