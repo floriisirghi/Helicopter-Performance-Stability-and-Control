@@ -76,21 +76,36 @@ dtf = steps*[0]
 altitude_h = steps*[0]
 
 #Gains needed for the cyclic controller
-K1 = 0.026
-K2 = 0.1
-K3 = 0.0015
-K4 = -0.006
-K5 = 0.5
-K6 = 0.00
+K1 = 0.025 #0.028 #0.026
+K2 = 0.12 #0.12 #0.1
+K3 = 0.0025 #0.0015
+K4 = -0.0045 #-0.006
+K5 = 0.5 #0.5
+K6 = -0.0001  #0.00
 
 #Gains needed for the collective controller
-K7 = 0.08
-K8 = 0.05
-K9 = 0.0386
+K7 = 0.1
+K8 = 0.12
+K9 = 0.04
 K10 = 0.89
+
+#Gains needed for the cyclic controller
+#K1 = 0.03 #0.026
+#K2 = 0.098 #0.1
+#K3 = 0.004 #0.0015
+#K4 = 0.005 #-0.006
+#K5 = 0.05 #0.005
+#K6 = 0.0001 #04 #0.00004
+
+#Gains needed for the collective controller
+#K7 = 0.08
+#K8 = 0.05
+#K9 = 0.038
+#K10 = 0.89
 
 
 V_man2 = knotstomps(70)
+print(knotstomps(70), knotstomps(90), knotstomps(110))
 V_des = V_man2
 V_man3 = knotstomps(90)
 V_man4 = knotstomps(110)
@@ -123,14 +138,14 @@ for i in range(steps):
     # Law for cyclic
     V[i] = np.sqrt(u[i] ** 2 + w[i] ** 2)
     if (i + 1) < steps:
-        dV[i + 1] = dV[i] + (V_des - V[i]) * step
+        dV[i + 1] = dV[i] + -(V[i] - V_des) * step
 
-        pitch_des = K4 * (V_des - V[i]) + K5 * udot[i] + K6 * dV[i + 1]
+        pitch_des = K4 * -(V[i] - V_des) + K5 * udot[i] + K6 * dV[i]
 
     if (i + 1) < steps:
         dtf[i + 1] = dtf[i] + (pitch[i] - pitch_des) * step
 
-        longit[i] =  K1 * (pitch[i] - pitch_des) * 180 / np.pi + K2 * q[i] * 180 / np.pi + K3 * dtf[i + 1]*180/np.pi
+        longit[i] =  K1 * (pitch[i] - pitch_des) * 180 / np.pi + K2 * q[i] * 180 / np.pi + K3 * dtf[i]*180/np.pi
 
     # Law for collective
     c[i] = u[i] * np.sin(pitch[i]) - w[i] * np.cos(pitch[i])
@@ -138,7 +153,7 @@ for i in range(steps):
     c_des = K9 * (h_des - altitude_h[i]) + K10 * c[i]
     if (i + 1) < steps:
         dc[i + 1] = dc[i] + (c_des - c[i]) * step
-        collect[i] = theta_0_gen + K7 * (c_des - c[i]) + K8 * dc[i + 1]
+        collect[i] = theta_0_gen + K7 * (c_des - c[i]) + K8 * dc[i]
 
     if checks == True:
         #Check if manouevre 1, going from 90 kts to 70 kts, is completed, theta_c_gen, theta_0_gen and V_des
@@ -242,8 +257,10 @@ plotting = True
 
 if plotting == True:
     plt.figure(1)
+    for i in range(len(u)):
+        u[i] = u[i]*1.94384
     plt.plot(t,u)
-    plt.ylabel('u(m/s)',rotation=0)
+    plt.ylabel('u(kts)',rotation=0)
     plt.xlabel('t(s)')
     plt.legend
     plt.figure(2)
