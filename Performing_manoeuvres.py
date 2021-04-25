@@ -2,7 +2,7 @@ from Parameters import *
 from MoI import Iyy_total
 import numpy as np
 import matplotlib.pyplot as plt
-from trim import knotstomps, trimconditions
+from trim import knotstomps, trimconditions, mpstoknots
 
 
 tau = 0.1
@@ -94,7 +94,7 @@ V_man2 = knotstomps(70)
 V_des = V_man2
 V_man3 = knotstomps(90)
 V_man4 = knotstomps(110)
-V_margin = knotstomps(5)
+V_margin = knotstomps(10)
 minmantime = 30
 
 man1= False
@@ -108,17 +108,17 @@ checks =  False
 
 for i in range(steps):
 
-    if t[i]<=80:
-        V_des = V_man2
-        theta_c_gen, theta_0_gen = trimconditions(V_man1)
+    #if t[i]<=80:
+    #    V_des = V_man2
+    #    theta_c_gen, theta_0_gen = trimconditions(V_man1)
 
-    if t[i]> 80 and t[i]<=180:
-        V_des = V_man3
-        theta_c_gen, theta_0_gen = trimconditions(V_man2)
+    #if t[i]> 80 and t[i]<=180:
+    #    V_des = V_man3
+    #    theta_c_gen, theta_0_gen = trimconditions(V_man2)
 
-    if t[i]> 180 and t[i]<=time:
-        V_des = V_man4
-        theta_c_gen, theta_0_gen = trimconditions(V_man3)
+    #if t[i]> 180 and t[i]<=time:
+    #    V_des = V_man4
+    #    theta_c_gen, theta_0_gen = trimconditions(V_man3)
 
     # Law for cyclic
     V[i] = np.sqrt(u[i] ** 2 + w[i] ** 2)
@@ -140,15 +140,18 @@ for i in range(steps):
         dc[i + 1] = dc[i] + (c_des - c[i]) * step
         collect[i] = theta_0_gen + K7 * (c_des - c[i]) + K8 * dc[i + 1]
 
+    checks = True
     if checks == True:
         #Check if manouevre 1, going from 90 kts to 70 kts, is completed, theta_c_gen, theta_0_gen and V_des
         if t[i] >= minmantime:
-            if V_man2 - V_margin  <= u[i-j] <= V_man2 + V_margin:
-                countlst[j] = 1
-            if np.sum(countlst) == len(countlst):
-                man1 = True
-                theta_c_gen, theta_0_gen = trimconditions(knotstomps(70))
-                V_des = V_man3
+            countlst = np.zeros((int(minmantime/step)))
+            for j in range(int(minmantime/step)):
+                if V_man2 - V_margin  <= u[i-j] <= V_man2 + V_margin:
+                    countlst[j] = 1
+                if np.sum(countlst) == len(countlst):
+                    man1 = True
+                    theta_c_gen, theta_0_gen = trimconditions(knotstomps(70))
+                    V_des = V_man3
 
         #When manouevre 1 is completed check if manoeuvre 2, going from 70 kts to 90 kts is completed, set new theta_c_gen, theta_0_gen and V_des
         if man1 == True:
@@ -242,8 +245,8 @@ plotting = True
 
 if plotting == True:
     plt.figure(1)
-    plt.plot(t,u)
-    plt.ylabel('u(m/s)',rotation=0)
+    plt.plot(t,1.94*np.ones(len(u))*u)      # This is now in knots
+    plt.ylabel('u(kts)',rotation=0)
     plt.xlabel('t(s)')
     plt.legend
     plt.figure(2)
