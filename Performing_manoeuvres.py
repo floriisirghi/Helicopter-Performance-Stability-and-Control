@@ -13,18 +13,21 @@ h=1 #this is the value in the Matlab file but maybe we should change it; it's ca
 
 # ---------- Initial values --------------
 t0=0
-steps=800
-time=80 #sec
+steps=2800
+time=280 #sec
 step=(time-t0)/steps
 
 
-collect=[6*np.pi/180] + (steps-1)*[0]
-longit=[0*np.pi/180] + (steps-1)*[0]
+V_man1 = knotstomps(90)
+theta_c_gen, theta_0_gen = trimconditions(V_man1)
+
+collect=[theta_0_gen] + (steps-1)*[0]
+longit=[theta_c_gen] + (steps-1)*[0]
 
 u0=knotstomps(90)
 w0=0
 q0=0
-pitch0=-7.3*np.pi/180
+pitch0=0
 
 x0=0
 lambda_i0 = np.sqrt(mass*g/(np.pi*R_main**2*2*rho_SL))/tip_speed_main #nondimensional inducd velocity
@@ -37,7 +40,7 @@ pitch=[pitch0] + (steps-1)*[0]
 
 x=[x0] + (steps-1)*[0]
 lambda_i=[lambda_i0] + (steps-1)*[0]
-z=[0] + (steps-1)*[0]
+z=[-100] + (steps-1)*[0]
 longitgrad=[0] + (steps-1)*[0]
 q_dimless=[0] + (steps-1)*[0]
 v_dimless=[0] + (steps-1)*[0]
@@ -73,29 +76,26 @@ dtf = steps*[0]
 altitude_h = steps*[0]
 
 #Gains needed for the cyclic controller
-K1 = 0.07 #0.89
-K2 = 0.06 #0.6 #
-K3 = 0.03 #0.07 #
-K4 = -0.0001 #-0.000569 #
-K5 = 0.0123 #0.0168 #
-K6 = 0.00003 #0
+K1 = 0.026
+K2 = 0.1
+K3 = 0.0015
+K4 = -0.006
+K5 = 0.5
+K6 = 0.00
 
 #Gains needed for the collective controller
-K7 = 0.002 #0.06
-K8 = 0.002 #0.05
-K9 = 0.01 #0.0386
-K10 = 0.03 #0.89
-
-
-V_man1 = knotstomps(90)
-theta_c_gen, theta_0_gen = trimconditions(V_man1)
+K7 = 0.08
+K8 = 0.05
+K9 = 0.0386
+K10 = 0.89
 
 
 V_man2 = knotstomps(70)
+V_des = V_man2
 V_man3 = knotstomps(90)
 V_man4 = knotstomps(110)
 V_margin = knotstomps(5)
-minmantime = 5
+minmantime = 30
 
 man1= False
 man2= False
@@ -108,18 +108,29 @@ checks =  False
 
 for i in range(steps):
 
-    # Law for cyclic
+    if t[i]<=80:
+        V_des = V_man2
+        theta_c_gen, theta_0_gen = trimconditions(V_man1)
 
+    if t[i]> 80 and t[i]<=180:
+        V_des = V_man3
+        theta_c_gen, theta_0_gen = trimconditions(V_man2)
+
+    if t[i]> 180 and t[i]<=time:
+        V_des = V_man4
+        theta_c_gen, theta_0_gen = trimconditions(V_man3)
+
+    # Law for cyclic
     V[i] = np.sqrt(u[i] ** 2 + w[i] ** 2)
     if (i + 1) < steps:
-        dV[i + 1] = dV[i] + (V_man2 - V[i]) * step
+        dV[i + 1] = dV[i] + (V_des - V[i]) * step
 
-        pitch_des = K4 * (V_man2 - V[i]) + K5 * udot[i] + K6 * dV[i + 1]
+        pitch_des = K4 * (V_des - V[i]) + K5 * udot[i] + K6 * dV[i + 1]
 
     if (i + 1) < steps:
         dtf[i + 1] = dtf[i] + (pitch[i] - pitch_des) * step
 
-        longit[i] = theta_c_gen + K1 * (pitch[i] - pitch_des) * 180 / np.pi + K2 * q[i] * 180 / np.pi + K3 * dtf[i + 1]
+        longit[i] =  K1 * (pitch[i] - pitch_des) * 180 / np.pi + K2 * q[i] * 180 / np.pi + K3 * dtf[i + 1]*180/np.pi
 
     # Law for collective
     c[i] = u[i] * np.sin(pitch[i]) - w[i] * np.cos(pitch[i])
@@ -130,47 +141,36 @@ for i in range(steps):
         collect[i] = theta_0_gen + K7 * (c_des - c[i]) + K8 * dc[i + 1]
 
     if checks == True:
-        #Check if manouevre 1 is completed, if this is true, set new theta_c_gen, theta_0_gen and V_des
+        #Check if manouevre 1, going from 90 kts to 70 kts, is completed, theta_c_gen, theta_0_gen and V_des
         if t[i] >= minmantime:
-            countlst = np.zeros((int(minmantime/step)))
-            for j in range(int(minmantime/step)):
-                if V_man1 - V_margin  <= u[i-j] <= V_man1 + V_margin:
-                    countlst[j] = 1
-                if np.sum(countlst) == len(countlst):
-                    man1 = True
-                    theta_c_gen, theta_0_gen = trimconditions(knotstomps(70))
-                    V_des = knotstomps(70)
+            if V_man2 - V_margin  <= u[i-j] <= V_man2 + V_margin:
+                countlst[j] = 1
+            if np.sum(countlst) == len(countlst):
+                man1 = True
+                theta_c_gen, theta_0_gen = trimconditions(knotstomps(70))
+                V_des = V_man3
 
-        #When manouevre 1 is completed, check if manouevre 2 is completed, if this is true, set new theta_c_gen, theta_0_gen and V_des
+        #When manouevre 1 is completed check if manoeuvre 2, going from 70 kts to 90 kts is completed, set new theta_c_gen, theta_0_gen and V_des
         if man1 == True:
             countlst = np.zeros((int(minmantime/step)))
             for j in range(int(minmantime/step)):
-                if V_man1 - V_margin  <= u[i-j] <= V_man1 + V_margin:
+                if V_man3 - V_margin  <= u[i-j] <= V_man3 + V_margin:
                     countlst[j] = 1
                 if np.sum(countlst) == len(countlst):
                     man2 = True
                     theta_c_gen, theta_0_gen = trimconditions(knotstomps(90))
-                    V_des = knotstomps(90)
+                    V_des = V_man4
 
-        #When manouevre 1 is completed, check if manouevre 2 is completed, if this is true, set new theta_c_gen, theta_0_gen and V_des
+        #When manouevre 2 is completed, check if manouevre 2, going from 90 to 110 kts is completed
         if man2 == True:
             countlst = np.zeros((int(minmantime/step)))
             for j in range(int(minmantime/step)):
-                if V_man1 - V_margin  <= u[i-j] <= V_man1 + V_margin:
+                if V_man4 - V_margin  <= u[i-j] <= V_man4 + V_margin:
                     countlst[j] = 1
                 if np.sum(countlst) == len(countlst):
                     man3 = True
-                    theta_c_gen, theta_0_gen = trimconditions(knotstomps(110))
-                    V_des = knotstomps(110)
+                    print("Done.")
 
-        #When manouevre 1 is completed, check if manouevre 2 is completed, if this is true, the simulation can end.
-        if man3 == True:
-            countlst = np.zeros((int(minmantime/step)))
-            for j in range(int(minmantime/step)):
-                if V_man1 - V_margin  <= u[i-j] <= V_man1 + V_margin:
-                    countlst[j] = 1
-                if np.sum(countlst) == len(countlst):
-                    man4 = True
 
 
     # ---- Defining the differential equations ------
@@ -273,7 +273,7 @@ if plotting == True:
     plt.legend
 
     plt.figure(7)
-    plt.plot(t, longit)
+    plt.plot(t[:-1], longit[:-1])
     plt.ylabel('longitudinal control (cyclic)',rotation=0)
     plt.xlabel('t(s)')
     plt.legend

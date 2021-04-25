@@ -23,14 +23,14 @@ def rotor_power_forward_flight(V):
     V_bar = V/v_i_hov
 
 
-    #v_i_bar_low = np.sqrt(-((V_bar[0:20] ** 2) / 2) + np.sqrt((V_bar[0:20] ** 4) / 4 + 1))
+    v_i_bar_low = np.sqrt(-((V_bar[0:40] ** 2) / 2) + np.sqrt((V_bar[0:40] ** 4) / 4 + 1))
     #v_i_bar_med = (np.sqrt(-((V_bar[20:40] ** 2) / 2) + np.sqrt((V_bar[20:40] ** 4) / 4 + 1)) + T/(2*rho_SL*np.pi*R_main**2*V[20:40])/v_i_hov)/2
-    #v_i_bar_high = T/(2*rho_SL*np.pi*R_main**2*V[40:])/v_i_hov
+    v_i_bar_high = T/(2*rho_SL*np.pi*R_main**2*V[40:])/v_i_hov
 
 
-    #v_i_bar = np.concatenate([v_i_bar_low,v_i_bar_med, v_i_bar_high])
+    v_i_bar = np.concatenate([v_i_bar_low, v_i_bar_high])
 
-    v_i_bar = np.sqrt(-((V_bar ** 2) / 2) + np.sqrt((V_bar ** 4) / 4 + 1))
+    #v_i_bar = np.sqrt(-((V_bar ** 2) / 2) + np.sqrt((V_bar ** 4) / 4 + 1))
 
     P_i = k*W*v_i_bar*np.sqrt(W/(2*rho_SL*np.pi*R_main**2)) #from equation 35a
 
