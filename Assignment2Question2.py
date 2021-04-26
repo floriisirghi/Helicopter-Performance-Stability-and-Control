@@ -28,9 +28,9 @@ def rotor_power_forward_flight(V):
     v_i_bar_high = T/(2*rho_SL*np.pi*R_main**2*V[40:])/v_i_hov
 
 
-    #v_i_bar = np.concatenate([v_i_bar_low, v_i_bar_high])
+    v_i_bar = np.concatenate([v_i_bar_low, v_i_bar_high])
 
-    v_i_bar = np.sqrt(-((V_bar ** 2) / 2) + np.sqrt((V_bar ** 4) / 4 + 1))
+    #v_i_bar = np.sqrt(-((V_bar ** 2) / 2) + np.sqrt((V_bar ** 4) / 4 + 1))
 
     P_i = k*W*v_i_bar*np.sqrt(W/(2*rho_SL*np.pi*R_main**2)) #from equation 35a
 
@@ -65,30 +65,28 @@ def rotor_power_forward_flight(V):
 
     P_tot = P_tot_main + P_tot_tail
 
-    return P_tot_main, P_tot_tail, P_p_and_P_d_tail, mu_tail, P_i_tail, T_tail, v_i_tail, P_tot, P_tot_tail, P_par, P_p_and_P_d, P_i, v_i_bar
+    return P_tot_main, P_p_and_P_d_tail, mu_tail, P_i_tail, T_tail, v_i_tail, P_tot, P_tot_tail, P_par, P_p_and_P_d, P_i, v_i_bar
 
 eta_m = 0.95        #Mechanical efficiency
 P_max_TO = 1270*eta_m
 P_max_CO = 1194*eta_m
 
 V = np.linspace(0,100,101)
-P_tot_main, P_tot_tail, P_p_and_P_d_tail, mu_tail, P_i_tail, T_tail, v_i_tail, P_tot, P_tot_tail, P_par, P_p_and_P_d, P_i, v_i_bar = rotor_power_forward_flight(V)
+P_tot_main, P_p_and_P_d_tail, mu_tail, P_i_tail, T_tail, v_i_tail, P_tot, P_tot_tail, P_par, P_p_and_P_d, P_i, v_i_bar = rotor_power_forward_flight(V)
 Power = P_tot/1000  #why do we have this 1.1 here?
 #plt.plot(V,P_tot_tail/1000, label="Tail rotor total power")
-plt.plot(V,Power, label="Total power")
+#plt.plot(V,Power, label="Total power")
 #plt.plot(V, v_i_bar, label="Induced velocity")
-plt.plot(V,P_par/1000, label="Parasite drag power")
-plt.plot(V,P_p_and_P_d/1000, label="Total profile drag power")
-plt.plot(V, P_i/1000, label="Induced power")
-plt.plot(V, P_tot_tail/1000, label="Tail rotor power")
-plt.xlabel("Velocity [m/s]")
-plt.ylabel("Power [kW]")
+#plt.plot(V,P_par/1000, label="Parasite drag power")
+#plt.plot(V,P_p_and_P_d/1000, label="Total profile drag power")
+#plt.plot(V, P_i/1000, label="Induced power")
+#plt.xlabel("Velocity [m/s]")
+#plt.ylabel("Power [kW]")
 #plt.plot(V,1270*0.95*np.ones(len(V)),label='Max TO')
-plt.grid(color='k', linestyle='-', linewidth=0.1)
-#plt.plot(V,1194*np.ones(len(V)),label='Max Continuous Power')
-plt.legend()
-plt.title("Power velocity curve with all its different components")
-plt.show()
+#plt.plot(V,1194*0.95*np.ones(len(V)),label='Max CO')
+#plt.legend()
+#plt.title(" Power velocity curve with Max Take-Off and Max Continuous power.")
+#plt.show()
 
 #print(P_par[60]+ P_i[60] + P_p_and_P_d[60])
 #print(P_par[60])
