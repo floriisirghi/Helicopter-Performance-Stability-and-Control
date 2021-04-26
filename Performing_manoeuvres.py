@@ -1,3 +1,6 @@
+# Developed by Florina Sirghi and Martijn Kanger as part of the AE4314 Helicopter Performance, Stability and Control course
+# April 2021
+
 from Parameters import *
 from MoI import Iyy_total
 import numpy as np
@@ -77,32 +80,18 @@ dtf = steps*[0]
 altitude_h = steps*[0]
 
 #Gains needed for the cyclic controller
-K1 = 0.045 #0.028 #0.026
-K2 = 0.09 #0.12 #0.1
-K3 = 0.002 #0.0015
-K4 = -0.005 #-0.006
-K5 = 0.5 #0.5
-K6 = -0.0001  #0.00
+K1 = 0.031
+K2 = 0.12
+K3 = 0.002
+K4 = -0.006
+K5 = 0.07
+K6 = -0.0001
 
 #Gains needed for the collective controller
 K7 = 0.1
-K8 = 0.12
+K8 = 0.05
 K9 = 0.04
 K10 = 0.89
-
-#Gains needed for the cyclic controller
-#K1 = 0.03 #0.026
-#K2 = 0.098 #0.1
-#K3 = 0.004 #0.0015
-#K4 = 0.005 #-0.006
-#K5 = 0.05 #0.005
-#K6 = 0.0001 #04 #0.00004
-
-#Gains needed for the collective controller
-#K7 = 0.08
-#K8 = 0.05
-#K9 = 0.038
-#K10 = 0.89
 
 
 V_man2 = knotstomps(70)
@@ -145,8 +134,7 @@ for i in range(steps):
     if (i + 1) < steps:
         dtf[i + 1] = dtf[i] + (pitch[i] - pitch_des) * step
 
-    if i>=1:
-        longit[i] = theta_c_gen + K1 * (pitch[i] - pitch_des) * 180 / np.pi + K2 * q[i] * 180 / np.pi + K3 * dtf[i]*180/np.pi
+    longit[i] = theta_c_gen + K1 * (pitch[i] - pitch_des) * 180 / np.pi + K2 * q[i] * 180 / np.pi + K3 * dtf[i]*180/np.pi
 
     # Law for collective
     c[i] = u[i] * np.sin(pitch[i]) - w[i] * np.cos(pitch[i])
@@ -154,7 +142,7 @@ for i in range(steps):
     c_des = K9 * (h_des - altitude_h[i]) + K10 * c[i]
     if (i + 1) < steps:
         dc[i + 1] = dc[i] + (c_des - c[i]) * step
-        collect[i] = theta_0_gen + K7 * (c_des - c[i]) + K8 * dc[i]
+    collect[i] = theta_0_gen + K7 * (c_des - c[i]) + K8 * dc[i]
 
     if checks == True:
         #Check if manouevre 1, going from 90 kts to 70 kts, is completed, theta_c_gen, theta_0_gen and V_des
@@ -291,9 +279,14 @@ if plotting == True:
     plt.legend
 
     plt.figure(7)
-    plt.plot(t[:-1], longit[:-1])
+    plt.plot(t[2:-1], longit[2:-1])
     plt.ylabel('longitudinal control (cyclic)',rotation=0)
     plt.xlabel('t(s)')
     plt.legend
-    plt.show()
 
+    plt.figure(8)
+    plt.plot(t, collect)
+    plt.ylabel('collective control',rotation=0)
+    plt.xlabel('t(s)')
+    plt.legend
+    plt.show()

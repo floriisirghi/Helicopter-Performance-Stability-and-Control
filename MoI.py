@@ -1,3 +1,6 @@
+# Developed by Florina Sirghi as part of the AE4314 Helicopter Performance, Stability and Control course
+# April 2021
+
 # The helicopter will be split up into the following parts:
 # - main rotor, which will be approximated as a disk 2.7%
 # - tail rotor, which will also be approximated as a disk -> 1.5% weight
