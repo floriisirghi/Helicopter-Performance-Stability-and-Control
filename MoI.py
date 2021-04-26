@@ -27,6 +27,7 @@ max_weight = 4300
 
 J_main = 2090 # Polar moment of inertia from Prouty (brightspace databse)
 m_main = 2*J_main/(R_main**2)
+m_main*100/mass
 y_cg_main_rotor = 3.31 #measured on the technical drawing
 x_cg_main_rotor = 4
 dist_y_main_2_cg = y_cg_main_rotor - y_cg
@@ -35,6 +36,7 @@ dist_x_main_2_cg = x_cg_main_rotor - x_cg
 Iy_disk_main = 1/4*m_main*R_main**2
 
 Iy_disk_main_complete = Iy_disk_main + m_main*(dist_x_main_2_cg**2 + dist_y_main_2_cg**2)
+
 
 # ------------- Tail Rotor and surrounding plate -------------
 
@@ -60,6 +62,7 @@ Iy_fuselage_p = 1/12*m_fuselage_p*(1.7**2 + 6.4**2)
 
 Iy_fuselage_p_complete =  Iy_fuselage_p + m_fuselage_p*(dist_x_fuselage_p_2_cg**2 + dist_y_fuselage_p_2_cg**2)
 
+
 # -------------- Fuselage cone -----------
 
 m_fuselage_c  = 8/100*max_weight
@@ -71,6 +74,7 @@ dist_x_fuselage_c_2_cg  = x_cg_fuselage_c - x_cg
 Iy_fuselage_c = m_fuselage_c*(3/20*0.58**2 + 3/80*2.77**2)
 
 Iy_fuselage_c_complete =  Iy_fuselage_c + m_fuselage_c*(dist_x_fuselage_c_2_cg**2 + dist_y_fuselage_c_2_cg**2)
+
 
 # --------------- Fuel tank ----------------
 
@@ -93,7 +97,6 @@ dist_x_eng_nac_2_cg = x_cg_eng_nac - x_cg
 
 Iy_eng_nac = 1/12*m_eng_nac*(4.2**2 + 0.65**2)
 Iy_eng_nac_complete = Iy_eng_nac + m_eng_nac*(dist_x_eng_nac_2_cg**2 + dist_y_eng_nac_2_cg**2)
-
 
 # ---------------- Main rotor hardware ---------
 
@@ -129,6 +132,7 @@ dist_x_vf_2_cg = x_cg_vf - x_cg
 Iy_vf = 1/12*m_vf*(1.08**2 + 1.48**2)
 Iy_vf_complete = Iy_vf + m_vf*(dist_x_vf_2_cg**2 + dist_y_vf_2_cg**2)
 
+
 # ------------------ Landing gear ---------------------
 
 m_lg = 4/100*max_weight
@@ -141,11 +145,12 @@ Iy_lg = 1/12*m_lg*(3.64**2 + 0.4**2)
 Iy_lg_complete = Iy_lg + m_lg*(dist_x_lg_2_cg**2 + dist_y_lg_2_cg**2)
 
 
+
 # ------------------ Total moment of inertia of the helicopter ---------------
 
 Iyy_total = Iy_disk_main_complete + Iy_disk_tail_complete + Iy_fuselage_p_complete + Iy_fuselage_c_complete + Iy_fuel_tank_complete + Iy_eng_nac_complete + Iy_main_hard_complete + Iy_hs_complete + Iy_vf_complete + Iy_lg_complete
 
 verify_total_mass = max_weight - (m_main + m_tail + m_fuselage_p + m_fuselage_c + m_fuel_tank + m_eng_nac + m_main_hard + m_hs + m_vf + m_lg)
 
-#print(Iyy_total)
+print("Iyy_total =",Iyy_total)
 #print(verify_total_mass)
