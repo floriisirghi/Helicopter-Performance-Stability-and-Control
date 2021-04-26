@@ -2,6 +2,7 @@
 Helicopter Performance, Stability and Control
 Eurocopter AS365 N3 Dauphin
 """
+from trim import knotstomps, trimconditions, mpstoknots
 
 import math as m
 import numpy as np
@@ -44,3 +45,22 @@ k = 1.15             # induced drag power factor; this parameter has a value bet
 k_tail = 1.4         # induced drag power factor for the tail; this parameter has a value between 1.3 and 1.5
                      # as stated in the assignment description, so we can assume it to be 1.4
 l_tr = 6.98          #  [m] tail rotor length. Measured on the sketch
+
+#Stability characteristics
+#P = 329 - 306 = 23 s
+P = 23                      #Measured
+T_05 = 23                   #Measured
+omega_n = 2*np.pi/P
+V = knotstomps(90)
+eta_c = (2*np.pi*c)/(P*V)
+xi_c = (np.log(0.5)*c)/(T_05*V)
+tau = (c)/(V*np.log(0.5))
+C_05 = (np.log(0.5)*eta_c)/(2*np.pi*xi_c)
+delta = xi_c*V*P/c
+omega_0 = np.sqrt(eta_c**2 + xi_c**2)*V/c
+xi = (-xi_c)/(np.sqrt(eta_c**2 + xi_c**2))
+print(r'$\lambda${c1,2}$ = ',xi_c, '+', r'$\pm$ j $\times$', eta_c)
+print(r'the period is P = ', P)
+print(r'the time to damp half the amplitude $T_{\frac{1}{2}}$ $\approx$', T_05)
+print(r'the undamped natural frequency $\omega_0$ = ',omega_0,'rad/sec')
+print(r'the damping ratio $\xi$ = ', xi)

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
-
+plt.rcParams.update({'font.size': 16})
 """
 Constants
 """
@@ -52,16 +52,14 @@ for i in range(len(V_array)):
     theta_0[i] = x[1][0]
     lambdda_i[i] = lambda_i
 
-plotting = False
+plotting = True
 if plotting == True:
-    plt.plot(V_array,lambdda_i,label='lambda')
-    plt.show()
-
     plt.plot(V_array,180/np.pi * theta_c,label=r'$\theta_c$')
     plt.plot(V_array[1:],180/np.pi * theta_0[1:],label=r'$\theta_0$')
     #plt.plot(V_array,lambdda_i,label='lambda')
     plt.xlabel('Velocity [m/s]')
     plt.ylabel('Angle [deg]')
+    plt.title('Cyclic and collective trim curve')
     plt.legend()
     plt.show()
 

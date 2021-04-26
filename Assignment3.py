@@ -112,31 +112,16 @@ def dPdVtest(P,V):
 V = np.linspace(0,100,1001)
 P_tot,P_par,P_PandP_d, P_i = rotor_power_forward_flight(V)
 
-plt.plot(V,P_tot,label='Total')
-plt.plot(V,P_par,label='Par')
-plt.plot(V,P_PandP_d,label=r'P_p & P_d')
-plt.plot(V,P_i,label='Induced')
-plt.legend()
-plt.title("Power velocity curve with individual components.")
-plt.show()
+
 
 analytical = dPdV(V)[0]
 discrete = dPdVtest(P_tot,V)
 
-plt.plot(V,analytical,label='analytical')
-plt.plot(V[1:],discrete,label='discrete')
-plt.legend()
-plt.title("Verification of the analytical derivative function.")
-plt.show()
 
 tail_analytical = dPdVtail(V)
 tail_discrete = dPdVtest(tailpower(V),V)
 
-plt.plot(V,tail_analytical,label='analytical')
-plt.plot(V[1:],tail_discrete,label='discrete')
-plt.legend()
-plt.title("Verification of the analytical derivative function.")
-plt.show()
+
 
 def Vrangefunc(V):
     Totalpower = rotor_power_forward_flight(V)[0] + tailpower(V)
@@ -157,19 +142,13 @@ print("Velocity for optimum endurance = ",V_end[0]," m/s.")
 Totalpower = rotor_power_forward_flight(V)[0] + tailpower(V)
 
 plt.plot(V,Totalpower)
-plt.plot(V,np.ones(len(V))*(rotor_power_forward_flight(V_end)[0] + tailpower(V_end)))
+plt.plot(V[200:500],np.ones(len(V))[200:500]*(rotor_power_forward_flight(V_end)[0] + tailpower(V_end)))
 plt.plot(V,slope*V)
+plt.scatter(35.7,774.2, s=80, facecolors='none', edgecolors='r',label='Maximum Endurance')
+plt.scatter(72,1055, s=80, facecolors='none', edgecolors='m',label='Maximum Range')
 plt.xlabel("V [m/s]")
 plt.ylabel("P [kW]",rotation=0)
-plt.title("Total power plot with points for max endurance and range. INTRODUCE AN EFFICIENCY FACTOR")
-plt.show()
-
-plt.plot(V,100*tailpower(V)/rotor_power_forward_flight(V)[0])
-plt.xlabel('V')
-plt.ylabel('percentage')
-plt.title('Fracion of tail rotor power over total rotor power')
-plt.show()
-
-plt.plot(V,tailpower(V))
-plt.plot(V,rotor_power_forward_flight(V)[0])
+plt.grid()
+plt.legend()
+plt.title("Total power plot with points for max endurance and range.")
 plt.show()

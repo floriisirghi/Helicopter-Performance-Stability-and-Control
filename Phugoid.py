@@ -13,15 +13,13 @@ h=1 #this is the value in the Matlab file but maybe we should change it; it's ca
 
 # ---------- Initial values --------------
 t0=0
-steps=2800
-time=280 #sec
+steps=3600
+time=360 #sec
 step=(time-t0)/steps
 
 
 V_man1 = knotstomps(90)
 theta_c_gen, theta_0_gen = trimconditions(knotstomps(90))
-print(theta_c_gen)
-print(theta_0_gen)
 collect=[theta_0_gen] + (steps-1)*[0]
 longit=[theta_c_gen] + (steps-1)*[0]
 
@@ -77,113 +75,66 @@ dtf = steps*[0]
 altitude_h = steps*[0]
 
 #Gains needed for the cyclic controller
-K1 = 0.025 #0.028 #0.026
-K2 = 0.12 #0.12 #0.1
-K3 = 0.0025 #0.0015
-K4 = -0.0045 #-0.006
-K5 = 0.5 #0.5
-K6 = -0.0001  #0.00
+K1 = 0.031
+K2 = 0.12
+K3 = 0.002
+K4 = -0.006
+K5 = 0.07
+K6 = -0.0001
 
 #Gains needed for the collective controller
 K7 = 0.1
-K8 = 0.12
+K8 = 0.05
 K9 = 0.04
 K10 = 0.89
 
-
-#V_man2 = knotstomps(70)
 V_des = knotstomps(90)
-#V_man3 = knotstomps(90)
-#V_man4 = knotstomps(110)
-#V_margin = knotstomps(10)
-minmantime = 30
-
-man1= False
-man2= False
-man3= False
-man4= False
-
-checks =  True
-
 #----------------- Integration scheme -------------------
-
+PilotOn = True
 for i in range(steps):
+    PilotOn = True
+    phugoid = True
+    if phugoid == True:
+        print(t[i])
+        if 299 <= t[i] <= 300:
+            pitch_use = pitch[i]
 
-    if 199 <= t[i] <= 200:
-        pitch_use = pitch[i]
-        print(i,pitch[i])
-
-    if 200 <= t[i] <=201:
-        pitch[i] = pitch_use + 1*np.pi/180   #
-    #if t[i]<=80:
-    #    V_des = V_man2
-    #    theta_c_gen, theta_0_gen = trimconditions(V_man1)
-
-    #if t[i]> 80 and t[i]<=180:
-    #    V_des = V_man3
-    #    theta_c_gen, theta_0_gen = trimconditions(V_man2)
-
-    #if t[i]> 180 and t[i]<=time:
-    #    V_des = V_man4
-    #    theta_c_gen, theta_0_gen = trimconditions(V_man3)
+        if 300 <= t[i] <=301:
+            pitch[i] = pitch_use + 1*np.pi/180
+            print('hello2')
+    
+    if PilotOn == True:
 
     # Law for cyclic
-    V[i] = np.sqrt(u[i] ** 2 + w[i] ** 2)
-    if (i + 1) < steps:
-        dV[i + 1] = dV[i] + (V_des - V[i]) * step
+        V[i] = np.sqrt(u[i] ** 2 + w[i] ** 2)
+        if (i + 1) < steps:
+            dV[i + 1] = dV[i] + -(V[i] - V_des) * step
 
-        pitch_des = K4 * (V_des - V[i]) + K5 * udot[i] + K6 * dV[i + 1]
+            pitch_des = K4 * -(V[i] - V_des) + K5 * udot[i] + K6 * dV[i]
 
-    if (i + 1) < steps:
-        dtf[i + 1] = dtf[i] + (pitch[i] - pitch_des) * step
+        if (i + 1) < steps:
+            dtf[i + 1] = dtf[i] + (pitch[i] - pitch_des) * step
 
-        longit[i] =  K1 * (pitch[i] - pitch_des) * 180 / np.pi + K2 * q[i] * 180 / np.pi + K3 * dtf[i + 1]*180/np.pi
+        if i>=1:
+            longit[i] = theta_c_gen + K1 * (pitch[i] - pitch_des) * 180 / np.pi + K2 * q[i] * 180 / np.pi + K3 * dtf[i]*180/np.pi
 
-    # Law for collective
-    c[i] = u[i] * np.sin(pitch[i]) - w[i] * np.cos(pitch[i])
-    altitude_h[i] = -z[i]
-    c_des = K9 * (h_des - altitude_h[i]) + K10 * c[i]
-    if (i + 1) < steps:
-        dc[i + 1] = dc[i] + (c_des - c[i]) * step
-        collect[i] = theta_0_gen + K7 * (c_des - c[i]) + K8 * dc[i + 1]
+        # Law for collective
+        c[i] = u[i] * np.sin(pitch[i]) - w[i] * np.cos(pitch[i])
+        altitude_h[i] = -z[i]
+        c_des = K9 * (h_des - altitude_h[i]) + K10 * c[i]
+        if (i + 1) < steps:
+            dc[i + 1] = dc[i] + (c_des - c[i]) * step
+            collect[i] = theta_0_gen + K7 * (c_des - c[i]) + K8 * dc[i + 1]
 
-    checks = False
-    if checks == True:
-        #Check if manouevre 1, going from 90 kts to 70 kts, is completed, theta_c_gen, theta_0_gen and V_des
-        if t[i] >= minmantime:
-            countlst = np.zeros((int(minmantime/step)))
-            for j in range(int(minmantime/step)):
-                if V_man2 - V_margin  <= u[i-j] <= V_man2 + V_margin:
-                    countlst[j] = 1
-                if np.sum(countlst) == len(countlst):
-                    man1 = True
-                    theta_c_gen, theta_0_gen = trimconditions(knotstomps(70))
-                    V_des = V_man3
-
-        man1 = False
-        #When manouevre 1 is completed check if manoeuvre 2, going from 70 kts to 90 kts is completed, set new theta_c_gen, theta_0_gen and V_des
-        if man1 == True:
-            countlst = np.zeros((int(minmantime/step)))
-            for j in range(int(minmantime/step)):
-                if V_man3 - V_margin  <= u[i-j] <= V_man3 + V_margin:
-                    countlst[j] = 1
-                if np.sum(countlst) == len(countlst):
-                    man2 = True
-                    theta_c_gen, theta_0_gen = trimconditions(knotstomps(90))
-                    V_des = V_man4
-
-        man2 = False
-        #When manouevre 2 is completed, check if manouevre 2, going from 90 to 110 kts is completed
-        if man2 == True:
-            countlst = np.zeros((int(minmantime/step)))
-            for j in range(int(minmantime/step)):
-                if V_man4 - V_margin  <= u[i-j] <= V_man4 + V_margin:
-                    countlst[j] = 1
-                if np.sum(countlst) == len(countlst):
-                    man3 = True
-                    print("Done.")
-
-
+    if PilotOn == False:
+        print("False")
+        # Law for cyclic
+        V[i] = np.sqrt(u[i] ** 2 + w[i] ** 2)
+        
+        # Law for collective
+        c[i] = u[i] * np.sin(pitch[i]) - w[i] * np.cos(pitch[i])
+        altitude_h[i] = -z[i]
+        c_des = K9 * (h_des - altitude_h[i]) + K10 * c[i]
 
     # ---- Defining the differential equations ------
 
@@ -258,14 +209,14 @@ if plotting == True:
     plt.ylabel('u(kts)',rotation=0)
     plt.xlabel('t(s)')
     plt.legend
-    plt.figure(2)
-    plt.plot(t,x)
-    plt.ylabel('x(m)',rotation=0)
-    plt.xlabel('t(s)')
-    plt.legend
+    #plt.figure(2)
+    #plt.plot(t,x)
+    #plt.ylabel('x(m)',rotation=0)
+    #plt.xlabel('t(s)')
+    #plt.legend
     plt.figure(3)
     plt.plot(t,w)
-    plt.ylabel('w(m/s)',rotation=0)
+    plt.ylabel('w(kts)',rotation=0)     # This is now in knots
     plt.xlabel('t(s)')
     plt.legend
     plt.figure(4)
@@ -273,11 +224,11 @@ if plotting == True:
     plt.ylabel('h(m)',rotation=0) #-z
     plt.xlabel('t(s)')
     plt.legend
-    plt.figure(5)
-    plt.plot(t,q)
-    plt.ylabel('q(rad/s)',rotation=0)
-    plt.xlabel('t(s)')
-    plt.legend
+    #plt.figure(5)
+    #plt.plot(t,q)
+    #plt.ylabel('q(rad/s)',rotation=0)
+    #plt.xlabel('t(s)')
+    #plt.legend
     plt.figure(6)
     plt.plot(t, pitch)
     plt.ylabel('pitch (rad)',rotation=0)
